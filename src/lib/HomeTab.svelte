@@ -359,7 +359,7 @@
 
   async function installLgc() {
     if (!lgcPath || !lgcMetadata || !lgcStatus?.version) return;
-    await ensureAppClosed('lgc', doInstallLgc, t('button.install'));
+    await ensureAppClosed('lgc', doInstallLgc, t('button.install_localization'));
   }
 
   async function doInstallLgc() {
@@ -378,7 +378,7 @@
 
   async function updateLgc() {
     if (!lgcPath) return;
-    await ensureAppClosed('lgc', doUpdateLgc, t('button.update'));
+    await ensureAppClosed('lgc', doUpdateLgc, t('button.update_localization'));
   }
 
   async function doUpdateLgc() {
@@ -394,7 +394,7 @@
 
   async function installMost() {
     if (!mostPath || !mostMetadata || !mostLangId || !mostStatus?.version) return;
-    await ensureAppClosed('most', doInstallMost, t('button.install'));
+    await ensureAppClosed('most', doInstallMost, t('button.install_localization'));
   }
 
   async function doInstallMost() {
@@ -418,7 +418,7 @@
 
   async function updateMost() {
     if (!mostPath) return;
-    await ensureAppClosed('most', doUpdateMost, t('button.update'));
+    await ensureAppClosed('most', doUpdateMost, t('button.update_localization'));
   }
 
   async function doUpdateMost() {
@@ -782,19 +782,19 @@
           <div class="{!lgcNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!lgcNeedsUpdate ? t('status.up_to_date') : ''}>
             <button class="btn btn-sm btn-primary" onclick={updateLgc} disabled={!lgcNeedsUpdate || installLoading.lgc}>
               {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
-              {t('button.update')}
+              {t('button.update_localization')}
             </button>
           </div>
         {:else}
           <div class="{lgcAppTooOld || lgcAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={lgcAppTooOld ? t('label.app_version_unsupported') : (lgcAppTooNew ? t('label.localization_not_ready') : '')}>
             <button class="btn btn-sm btn-primary" onclick={installLgc} disabled={lgcInstallDisabled()}>
               {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
-              {t('button.install')}
+              {t('button.install_localization')}
             </button>
           </div>
         {/if}
         <button class="btn btn-sm btn-outline btn-error" onclick={() => (showLgcUninstall = true)} disabled={!lgcStatus?.loc_installed}>
-          {t('button.uninstall')}
+          {t('button.uninstall_localization')}
         </button>
         <button class="btn btn-sm btn-outline" onclick={launchLgc} disabled={!lgcPath}>
           {t('button.launch')}
@@ -881,19 +881,19 @@
           <div class="{!mostNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!mostNeedsUpdate && !mostLangId ? t('label.select_language_first') : (!mostNeedsUpdate ? t('status.up_to_date') : '')}>
             <button class="btn btn-sm btn-primary" onclick={updateMost} disabled={!mostNeedsUpdate || installLoading.most}>
               {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
-              {t('button.update')}
+              {t('button.update_localization')}
             </button>
           </div>
         {:else}
           <div class="{mostInstallDisabled() && !mostLangId || mostAppTooOld || mostAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={mostAppTooOld ? t('label.app_version_unsupported') : (mostAppTooNew ? t('label.localization_not_ready') : (mostInstallDisabled() && !mostLangId ? t('label.select_language_first') : ''))}>
             <button class="btn btn-sm btn-primary" onclick={installMost} disabled={mostInstallDisabled()}>
               {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
-              {t('button.install')}
+              {t('button.install_localization')}
             </button>
           </div>
         {/if}
         <button class="btn btn-sm btn-outline btn-error" onclick={() => (showMostUninstall = true)} disabled={!mostStatus?.loc_installed}>
-          {t('button.uninstall')}
+          {t('button.uninstall_localization')}
         </button>
         <button class="btn btn-sm btn-outline" onclick={launchMost} disabled={!mostPath}>
           {t('button.launch')}
@@ -969,7 +969,7 @@
       <p class="mb-4 text-sm whitespace-pre-line">{t('dialog.uninstall_confirm_msg')}</p>
       <div class="modal-action">
         <button class="btn btn-outline btn-sm" onclick={() => (showLgcUninstall = false)}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={() => { showLgcUninstall = false; ensureAppClosed('lgc', fullUninstallLgc, t('button.uninstall')); }}>{t('button.uninstall')}</button>
+        <button class="btn btn-error btn-sm" onclick={() => { showLgcUninstall = false; ensureAppClosed('lgc', fullUninstallLgc, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
       </div>
     </div>
   </div>
@@ -982,7 +982,7 @@
       <p class="mb-4 text-sm whitespace-pre-line">{t('dialog.uninstall_confirm_msg')}</p>
       <div class="modal-action">
         <button class="btn btn-outline btn-sm" onclick={() => (showMostUninstall = false)}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={() => { showMostUninstall = false; ensureAppClosed('most', fullUninstallMost, t('button.uninstall')); }}>{t('button.uninstall')}</button>
+        <button class="btn btn-error btn-sm" onclick={() => { showMostUninstall = false; ensureAppClosed('most', fullUninstallMost, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
       </div>
     </div>
   </div>
