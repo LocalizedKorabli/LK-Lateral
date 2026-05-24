@@ -1,0 +1,43 @@
+[package]
+name = "lk-lateral"
+version = "0.1.0"
+description = "Installation for lgc & most l10n made easy."
+authors = ["LocalizedKorabli"]
+edition = "2021"
+
+[lib]
+name = "lk_lateral_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+winreg = "0.52"
+reqwest = { version = "0.12", features = ["json", "stream", "rustls-tls"], default-features = false }
+sha2 = "0.10"
+keyring = { version = "3", features = ["windows-native"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+sevenz-rust = "0.6"
+tokio = { version = "1", features = ["fs", "io-util", "process"] }
+dirs = "5"
+log = "0.4"
+env_logger = "0.11"
+futures-util = "0.3"
+sysinfo = "0.33"
+regex = "1"
+sys-locale = "0.3"
+
+[profile.release]
+strip = true
+opt-level = 's'
+lto = true
+codegen-units = 1
+panic = "abort"
