@@ -541,17 +541,30 @@
     return compareVersions(lgcMetadata.version, lgcStatus.loc_version) <= 0;
   });
 
-  let lgcVersionMismatch = $derived.by(() => {
+  let lgcAppTooOld = $derived.by(() => {
     if (!lgcPath || !lgcStatus?.version || !lgcMetadata) return false;
-    return compareVersions(lgcStatus.version, lgcMetadata.supported_lgc_version) !== 0;
+    return compareVersions(lgcStatus.version, lgcMetadata.supported_lgc_version) < 0;
   });
 
-  let mostVersionMismatch = $derived.by(() => {
+  let lgcAppTooNew = $derived.by(() => {
+    if (!lgcPath || !lgcStatus?.version || !lgcMetadata) return false;
+    return compareVersions(lgcStatus.version, lgcMetadata.supported_lgc_version) > 0;
+  });
+
+  let mostAppTooOld = $derived.by(() => {
     if (!mostPath || !mostStatus?.version || !mostMetadata || !mostLangId) return false;
     const langEntry = mostMetadata.find(m => m.id === mostLangId);
     if (!langEntry) return false;
     const sv = langEntry.l10n_app.supported_most_version || '';
-    return !!sv && compareVersions(mostStatus.version, sv) !== 0;
+    return !!sv && compareVersions(mostStatus.version, sv) < 0;
+  });
+
+  let mostAppTooNew = $derived.by(() => {
+    if (!mostPath || !mostStatus?.version || !mostMetadata || !mostLangId) return false;
+    const langEntry = mostMetadata.find(m => m.id === mostLangId);
+    if (!langEntry) return false;
+    const sv = langEntry.l10n_app.supported_most_version || '';
+    return !!sv && compareVersions(mostStatus.version, sv) > 0;
   });
 
   let mostNeedsUpdate = $derived.by(() => {
@@ -586,7 +599,7 @@
 
   function lgcInstallDisabled() {
     return !lgcPath || !lgcStatus?.version || installLoading.lgc
-      || (lgcMetadata && lgcStatus?.version && compareVersions(lgcStatus.version, lgcMetadata.supported_lgc_version) !== 0);
+      || lgcAppTooOld || lgcAppTooNew;
   }
 
   function resolveMostLangName(langId: string): string {
@@ -641,11 +654,7 @@
 
   function mostInstallDisabled() {
     if (!mostPath || !mostStatus?.version || installLoading.most || !mostLangId) return true;
-    if (!mostMetadata || !mostLangId) return true;
-    const langEntry = mostMetadata.find(m => m.id === mostLangId);
-    if (!langEntry) return true;
-    const sv = langEntry.l10n_app.supported_most_version || '';
-    return sv && compareVersions(mostStatus.version, sv) !== 0;
+    return mostAppTooOld || mostAppTooNew;
   }
 
   let initialized = false;
@@ -728,8 +737,10 @@
         <span class="text-base-content/60">{t('label.version')}:</span>
         <span>
           {lgcStatus?.version || '-'}
-          {#if lgcVersionMismatch}
+          {#if lgcAppTooOld}
             <span class="badge badge-warning badge-xs ml-1.5">{t('status.needs_update')}</span>
+          {:else if lgcAppTooNew}
+            <span class="badge badge-warning badge-xs ml-1.5">{t('status.awaiting_adaptation')}</span>
           {/if}
         </span>
         <span class="text-base-content/60">{t('label.localization')}:</span>
@@ -768,12 +779,14 @@
           <button class="btn btn-sm btn-outline" onclick={setLgcLanguage}>{t('button.apply_language')}</button>
         {/if}
         {#if lgcStatus?.loc_installed}
-          <button class="btn btn-sm btn-primary" onclick={updateLgc} disabled={!lgcNeedsUpdate || installLoading.lgc}>
-            {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
-            {t('button.update')}
-          </button>
+          <div class="{!lgcNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!lgcNeedsUpdate ? t('status.up_to_date') : ''}>
+            <button class="btn btn-sm btn-primary" onclick={updateLgc} disabled={!lgcNeedsUpdate || installLoading.lgc}>
+              {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
+              {t('button.update')}
+            </button>
+          </div>
         {:else}
-          <div class="{lgcVersionMismatch ? 'tooltip tooltip-left' : ''}" data-tip={lgcVersionMismatch ? t('label.app_version_unsupported') : ''}>
+          <div class="{lgcAppTooOld || lgcAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={lgcAppTooOld ? t('label.app_version_unsupported') : (lgcAppTooNew ? t('label.localization_not_ready') : '')}>
             <button class="btn btn-sm btn-primary" onclick={installLgc} disabled={lgcInstallDisabled()}>
               {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
               {t('button.install')}
@@ -815,8 +828,10 @@
         <span class="text-base-content/60">{t('label.version')}:</span>
         <span>
           {mostStatus?.version || '-'}
-          {#if mostVersionMismatch}
+          {#if mostAppTooOld}
             <span class="badge badge-warning badge-xs ml-1.5">{t('status.needs_update')}</span>
+          {:else if mostAppTooNew}
+            <span class="badge badge-warning badge-xs ml-1.5">{t('status.awaiting_adaptation')}</span>
           {/if}
         </span>
         <span class="text-base-content/60">{t('label.localization_app')}:</span>
@@ -863,14 +878,14 @@
       {/if}
       <div class="card-actions justify-end mt-3">
         {#if mostStatus?.loc_installed}
-          <div class="{!mostNeedsUpdate && !mostLangId ? 'tooltip tooltip-left' : ''}" data-tip={!mostNeedsUpdate && !mostLangId ? t('label.select_language_first') : ''}>
+          <div class="{!mostNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!mostNeedsUpdate && !mostLangId ? t('label.select_language_first') : (!mostNeedsUpdate ? t('status.up_to_date') : '')}>
             <button class="btn btn-sm btn-primary" onclick={updateMost} disabled={!mostNeedsUpdate || installLoading.most}>
               {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
               {t('button.update')}
             </button>
           </div>
         {:else}
-          <div class="{mostInstallDisabled() && !mostLangId || mostVersionMismatch ? 'tooltip tooltip-left' : ''}" data-tip={mostVersionMismatch ? t('label.app_version_unsupported') : (mostInstallDisabled() && !mostLangId ? t('label.select_language_first') : '')}>
+          <div class="{mostInstallDisabled() && !mostLangId || mostAppTooOld || mostAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={mostAppTooOld ? t('label.app_version_unsupported') : (mostAppTooNew ? t('label.localization_not_ready') : (mostInstallDisabled() && !mostLangId ? t('label.select_language_first') : ''))}>
             <button class="btn btn-sm btn-primary" onclick={installMost} disabled={mostInstallDisabled()}>
               {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
               {t('button.install')}
