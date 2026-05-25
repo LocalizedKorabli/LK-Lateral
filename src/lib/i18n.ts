@@ -21,19 +21,19 @@ export function systemLocaleToLanguage(): Language {
 }
 
 export const APP_LANG_TO_LGC_ID: Record<Language, string> = {
-  zh_CN: 'zh',
-  zh_TW: 'zh',
+  zh_CN: 'zh_cn',
+  zh_TW: 'zh_tw',
   en: 'en',
   ru: 'ru',
   ja: 'ja',
 };
 
 export const APP_LANG_TO_MOST_ID: Record<Language, string> = {
-  zh_CN: 'zh',
+  zh_CN: 'zh_CN',
   zh_TW: 'zh_TW',
-  en: 'en',
-  ru: 'ru',
-  ja: 'ja',
+  en: 'en_US',
+  ru: 'en_US',
+  ja: 'ja_JP',
 };
 
 type TranslationMap = Record<string, string>;

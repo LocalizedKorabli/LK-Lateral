@@ -343,8 +343,10 @@
     const preferred = APP_LANG_TO_LGC_ID[lang];
     if (lgcMetadata.supported_languages.some(l => l.id === preferred)) {
       lgcLangId = preferred;
-      saveLgcLangIdToConfig();
+    } else if (lgcMetadata.supported_languages.length) {
+      lgcLangId = lgcMetadata.supported_languages[0].id;
     }
+    if (lgcLangId) saveLgcLangIdToConfig();
   }
 
   function autoSelectMostLang() {
@@ -353,8 +355,10 @@
     const preferred = APP_LANG_TO_MOST_ID[lang];
     if (mostMetadata.some(m => m.id === preferred)) {
       mostLangId = preferred;
-      saveMostLangIdToConfig();
+    } else if (mostMetadata.length) {
+      mostLangId = mostMetadata[0].id;
     }
+    if (mostLangId) saveMostLangIdToConfig();
   }
 
   async function installLgc() {
@@ -552,16 +556,20 @@
   });
 
   let mostAppTooOld = $derived.by(() => {
-    if (!mostPath || !mostStatus?.version || !mostMetadata || !mostLangId) return false;
-    const langEntry = mostMetadata.find(m => m.id === mostLangId);
+    if (!mostPath || !mostStatus?.version || !mostMetadata || !mostMetadata.length) return false;
+    const langEntry = mostLangId
+      ? mostMetadata.find(m => m.id === mostLangId)
+      : mostMetadata[0];
     if (!langEntry) return false;
     const sv = langEntry.l10n_app.supported_most_version || '';
     return !!sv && compareVersions(mostStatus.version, sv) < 0;
   });
 
   let mostAppTooNew = $derived.by(() => {
-    if (!mostPath || !mostStatus?.version || !mostMetadata || !mostLangId) return false;
-    const langEntry = mostMetadata.find(m => m.id === mostLangId);
+    if (!mostPath || !mostStatus?.version || !mostMetadata || !mostMetadata.length) return false;
+    const langEntry = mostLangId
+      ? mostMetadata.find(m => m.id === mostLangId)
+      : mostMetadata[0];
     if (!langEntry) return false;
     const sv = langEntry.l10n_app.supported_most_version || '';
     return !!sv && compareVersions(mostStatus.version, sv) > 0;
