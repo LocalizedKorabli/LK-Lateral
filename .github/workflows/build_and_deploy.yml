@@ -1,0 +1,116 @@
+# .github/workflows/build-and-deploy.yml
+name: Build & Deploy LK-Lateral
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'metadata.json'
+      - 'docs/**'
+      - '.github/**'
+      - '*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+  R2_ACCESS_KEY: ${{ secrets.R2_ACCESS_KEY }}
+  R2_SECRET_KEY: ${{ secrets.R2_SECRET_KEY }}
+  R2_BUCKET: ${{ secrets.R2_BUCKET }}
+  R2_PUBLIC_URL: ${{ secrets.R2_PUBLIC_URL }}
+  CF_PAGES_DEPLOY_HOOK: ${{ secrets.CF_PAGES_DEPLOY_HOOK }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Read version
+        id: version
+        shell: pwsh
+        run: |
+          $version = Select-String -Path src-tauri/Cargo.toml `
+            -Pattern '^version\s*=\s*"([^"]+)"' |
+            ForEach-Object { $_.Matches.Groups[1].Value }
+          echo "APP_VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build Tauri app (NSIS)
+        run: npm run tauri build -- --bundles nsis
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Locate NSIS installer
+        id: installer
+        shell: pwsh
+        run: |
+          $expected = "LK-Lateral_${{ steps.version.outputs.APP_VERSION }}_x64-setup.exe"
+          $path = "src-tauri\target\release\bundle\nsis\$expected"
+          if (-not (Test-Path $path)) { exit 1 }
+          echo "FILE_NAME=$expected" >> $env:GITHUB_OUTPUT
+          echo "NSIS_PATH=$path" >> $env:GITHUB_OUTPUT
+
+      - name: Upload NSIS to R2
+        shell: pwsh
+        run: |
+          choco install awscli -y --no-progress
+          $env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") `
+            + ";" + [Environment]::GetEnvironmentVariable("Path","User")
+          aws s3 cp "${{ steps.installer.outputs.NSIS_PATH }}" `
+            "s3://${{ env.R2_BUCKET }}/lateral/app/${{ steps.installer.outputs.FILE_NAME }}" `
+            --endpoint-url "${{ env.R2_ENDPOINT }}" --region auto
+        env:
+          AWS_ACCESS_KEY_ID: ${{ env.R2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ env.R2_SECRET_KEY }}
+          AWS_DEFAULT_REGION: auto
+
+      - name: Generate metadata.json
+        id: meta
+        shell: pwsh
+        run: |
+          $meta = @{
+            path    = "${{ env.R2_PUBLIC_URL }}/lateral/app/${{ steps.installer.outputs.FILE_NAME }}"
+            version = "${{ steps.version.outputs.APP_VERSION }}"
+          }
+          $json = $meta | ConvertTo-Json -Compress
+          Set-Content -Path metadata.json -Value $json -Encoding UTF8
+
+      - name: Commit metadata.json
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metadata.json
+          git diff --cached --quiet
+          if ($LASTEXITCODE -eq 0) {
+            echo "No changes, skipping"
+          } else {
+            git commit -m "chore: update metadata.json to v${{ steps.version.outputs.APP_VERSION }} [skip ci]"
+            git push
+          }
+
+      - name: Trigger Cloudflare Pages Deploy Hook
+        run: curl -X POST "${{ env.CF_PAGES_DEPLOY_HOOK }}"
