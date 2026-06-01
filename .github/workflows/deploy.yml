@@ -1,0 +1,64 @@
+# .github/workflows/release-publish.yml
+name: Publish Release to R2 & Update Metadata
+
+on:
+  release:
+    types: [published]
+
+# grant write permissions explicitly
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download NSIS installer from Release
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          version: latest
+          file: "*_x64-setup.exe"
+
+      - name: Setup AWS CLI
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.R2_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.R2_SECRET_KEY }}
+          aws-region: auto
+
+      - name: Upload to R2
+        shell: bash
+        run: |
+          FILE_NAME=$(ls *_x64-setup.exe | head -1)
+          echo "FILE_NAME=$FILE_NAME" >> $GITHUB_ENV
+          aws s3 cp "$FILE_NAME" \
+            "s3://${{ secrets.R2_BUCKET }}/lateral/app/$FILE_NAME" \
+            --endpoint-url "${{ secrets.R2_ENDPOINT }}"
+
+      - name: Generate metadata.json
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          jq -n \
+            --arg path "${{ secrets.R2_PUBLIC_URL }}/lateral/app/$FILE_NAME" \
+            --arg version "$VERSION" \
+            '{path: $path, version: $version}' > metadata.json
+          cat metadata.json
+
+      - name: Commit & push metadata.json
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metadata.json
+          git diff --cached --quiet || {
+            git commit -m "chore: update metadata.json to ${GITHUB_REF_NAME} [skip ci]"
+            git push
+          }
+
+      - name: Trigger Cloudflare Pages Deploy Hook
+        run: curl -X POST -s "${{ secrets.CF_PAGES_DEPLOY_HOOK }}"
