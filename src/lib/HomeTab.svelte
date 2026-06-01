@@ -520,8 +520,8 @@
   });
 
   let lgcBadgeText = $derived.by(() => {
-    if (!lgcStatus || !lgcStatus.loc_installed) return t('status.not_installed');
-    return t('status.installed');
+    if (!lgcStatus || !lgcStatus.loc_installed) return t('status.localization_not_installed');
+    return t('status.localization_installed');
   });
 
   let mostBadgeClass = $derived.by(() => {
@@ -531,8 +531,8 @@
   });
 
   let mostBadgeText = $derived.by(() => {
-    if (!mostStatus || !mostStatus.loc_installed) return t('status.not_installed');
-    return t('status.installed');
+    if (!mostStatus || !mostStatus.loc_installed) return t('status.localization_not_installed');
+    return t('status.localization_installed');
   });
 
   let lgcNeedsUpdate = $derived.by(() => {
@@ -759,7 +759,7 @@
               <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
-            {t('status.not_installed')}
+            {t('status.localization_not_installed')}
           {/if}
         </span>
         <span class="text-base-content/60">{t('label.lgc_language')}:</span>
@@ -850,7 +850,7 @@
               <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
-            {t('status.not_installed')}
+            {t('status.localization_not_installed')}
           {/if}
         </span>
         <span class="text-base-content/60">{t('label.localization_mods')}:</span>
@@ -861,7 +861,7 @@
               <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
-            {t('status.not_installed')}
+            {t('status.localization_not_installed')}
           {/if}
         </span>
         <span class="text-base-content/60">{t('label.language')}:</span>

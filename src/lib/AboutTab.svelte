@@ -84,7 +84,8 @@
 <div class="flex flex-col items-center justify-center h-full gap-6 p-8">
   <img src="/favicon.png" alt="LK-Lateral" class="w-24 h-24 rounded-xl shadow-lg" />
 
-  <h1 class="text-2xl font-bold">{t('app.title')}</h1>
+  <h1 class="text-2xl font-bold">{t('app.title_brand')}</h1>
+  <p class="text-sm text-base-content/60 -mt-4">{t('app.title_sub')}</p>
 
   <div class="flex items-center gap-2 text-base-content/70">
     <span class="text-sm">v{appVersion}</span>
