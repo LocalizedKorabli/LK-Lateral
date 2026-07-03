@@ -102,10 +102,14 @@
   let showMostSettings: boolean = $state(false);
   let showLgcUninstall: boolean = $state(false);
   let showMostUninstall: boolean = $state(false);
+  let showLgcApplyLang: boolean = $state(false);
+  let showMostApplyLang: boolean = $state(false);
   let lgcPathInput: string = $state('');
   let mostPathInput: string = $state('');
   let lgcLangId: string = $state('');
+  let lgcLangIdInput: string = $state('');
   let mostLangId: string = $state('');
+  let mostLangIdInput: string = $state('');
 
   type PendingAction = {
     instance: 'lgc' | 'most';
@@ -376,7 +380,7 @@
       await invoke('download_and_install_lgc', { lgcPath, langId: lgcLangId || null });
       showToast(t('dialog.install_success'), 'success');
       await checkLgcStatus();
-    } catch { lgcProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed'), 'error'); }
+    } catch (e) { lgcProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed_detail', { error: String(e) }), 'error'); }
     installLoading = { ...installLoading, lgc: false };
   }
 
@@ -392,7 +396,7 @@
       await invoke('download_and_install_lgc', { lgcPath, langId: lgcLangId || null });
       showToast(t('dialog.install_success'), 'success');
       await checkLgcStatus();
-    } catch { lgcProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed'), 'error'); }
+    } catch (e) { lgcProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed_detail', { error: String(e) }), 'error'); }
     installLoading = { ...installLoading, lgc: false };
   }
 
@@ -416,7 +420,7 @@
       await invoke('download_and_install_most', { mostPath, langId: mostLangId });
       showToast(t('dialog.install_success'), 'success');
       await checkMostStatus();
-    } catch { mostProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed'), 'error'); }
+    } catch (e) { mostProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed_detail', { error: String(e) }), 'error'); }
     installLoading = { ...installLoading, most: false };
   }
 
@@ -432,7 +436,7 @@
       await invoke('download_and_install_most', { mostPath, langId: mostLangId || mostStatus?.loc_language || '' });
       showToast(t('dialog.install_success'), 'success');
       await checkMostStatus();
-    } catch { mostProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed'), 'error'); }
+    } catch (e) { mostProgress = { visible: false, percent: 0, message: '', downloadedBytes: 0, totalBytes: 0 }; showToast(t('dialog.install_failed_detail', { error: String(e) }), 'error'); }
     installLoading = { ...installLoading, most: false };
   }
 
@@ -442,7 +446,7 @@
       showLgcUninstall = false;
       showToast(t('dialog.uninstall_success'), 'success');
       await checkLgcStatus();
-    } catch { showToast(t('dialog.uninstall_failed'), 'error'); }
+    } catch (e) { showToast(t('dialog.uninstall_failed_detail', { error: String(e) }), 'error'); }
   }
 
   async function fullUninstallMost() {
@@ -451,7 +455,7 @@
       showMostUninstall = false;
       showToast(t('dialog.uninstall_success'), 'success');
       await checkMostStatus();
-    } catch { showToast(t('dialog.uninstall_failed'), 'error'); }
+    } catch (e) { showToast(t('dialog.uninstall_failed_detail', { error: String(e) }), 'error'); }
   }
 
   async function launchLgc() {
@@ -478,8 +482,8 @@
     if (selected && typeof selected === 'string') mostPathInput = selected;
   }
 
-  function openLgcSettings() { lgcPathInput = lgcPath; showLgcSettings = true; }
-  function openMostSettings() { mostPathInput = mostPath; showMostSettings = true; }
+  function openLgcSettings() { lgcPathInput = lgcPath; lgcLangIdInput = lgcLangId; showLgcSettings = true; }
+  function openMostSettings() { mostPathInput = mostPath; mostLangIdInput = mostLangId; showMostSettings = true; }
 
   async function saveLgcSettings() {
     if (!lgcPathInput) { showLgcSettings = false; return; }
@@ -487,10 +491,16 @@
     if (!valid) { showToast(t('error.invalid_dir'), 'error'); return; }
     lgcPaths = addPathUnique(lgcPaths, lgcPathInput);
     lgcPath = lgcPathInput;
+    if (lgcLangIdInput && lgcLangIdInput !== lgcLangId) {
+      lgcLangId = lgcLangIdInput;
+      await saveLgcLangIdToConfig();
+    }
     showLgcSettings = false;
-    await saveLgcLangIdToConfig();
     await savePathsToConfig(lgcPaths, mostPaths);
     await checkLgcStatus();
+    if (lgcStatus?.loc_installed && lgcLangId && lgcLangId.toLowerCase() !== lgcStatus.loc_language.toLowerCase()) {
+      showLgcApplyLang = true;
+    }
   }
 
   async function saveMostSettings() {
@@ -499,10 +509,16 @@
     if (!valid) { showToast(t('error.invalid_dir'), 'error'); return; }
     mostPaths = addPathUnique(mostPaths, mostPathInput);
     mostPath = mostPathInput;
+    if (mostLangIdInput && mostLangIdInput !== mostLangId) {
+      mostLangId = mostLangIdInput;
+      await saveMostLangIdToConfig();
+    }
     showMostSettings = false;
-    await saveMostLangIdToConfig();
     await savePathsToConfig(lgcPaths, mostPaths);
     await checkMostStatus();
+    if (mostStatus?.loc_installed && mostLangId && mostLangId !== mostStatus.loc_language) {
+      showMostApplyLang = true;
+    }
   }
 
   async function saveMostLangIdToConfig() {
@@ -603,6 +619,11 @@
     const langEntry = mostMetadata.find(m => m.id === mostStatus.loc_language);
     if (!langEntry) return false;
     return compareVersions(langEntry.l10n_mods.version, mostStatus.loc_mods_version) > 0;
+  });
+
+  let mostLangSwitched = $derived.by(() => {
+    if (!mostStatus?.loc_installed || !mostLangId) return false;
+    return mostLangId !== mostStatus.loc_language;
   });
 
   function lgcInstallDisabled() {
@@ -886,8 +907,9 @@
       {/if}
       <div class="card-actions justify-end mt-3">
         {#if mostStatus?.loc_installed}
-          <div class="{!mostNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!mostNeedsUpdate && !mostLangId ? t('label.select_language_first') : (!mostNeedsUpdate ? t('status.up_to_date') : '')}>
-            <button class="btn btn-sm btn-primary" onclick={updateMost} disabled={!mostNeedsUpdate || installLoading.most}>
+          {@const btnEnabled = mostNeedsUpdate || mostLangSwitched}
+          <div class="{!btnEnabled ? 'tooltip tooltip-left' : ''}" data-tip={!btnEnabled && !mostLangId ? t('label.select_language_first') : (!btnEnabled ? t('status.up_to_date') : '')}>
+            <button class="btn btn-sm btn-primary" onclick={mostLangSwitched ? installMost : updateMost} disabled={!btnEnabled || installLoading.most}>
               {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
               {t('button.update_localization')}
             </button>
@@ -927,7 +949,7 @@
       </div>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.lgc_language')}</span></div>
-        <select class="select select-bordered w-full" bind:value={lgcLangId} onchange={saveLgcLangIdToConfig}>
+        <select class="select select-bordered w-full" bind:value={lgcLangIdInput}>
           <option value="">{t('label.select_language')}</option>
           {#each lgcMetadata?.supported_languages || [] as langItem}
             <option value={langItem.id}>{langItem.name}</option>
@@ -955,7 +977,7 @@
       </div>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.most_language')}</span></div>
-        <select class="select select-bordered w-full" bind:value={mostLangId} onchange={saveMostLangIdToConfig}>
+        <select class="select select-bordered w-full" bind:value={mostLangIdInput}>
           <option value="">{t('label.select_language')}</option>
           {#each mostMetadata || [] as item}
             <option value={item.id}>{item.name}</option>
@@ -991,6 +1013,32 @@
       <div class="modal-action">
         <button class="btn btn-outline btn-sm" onclick={() => (showMostUninstall = false)}>{t('button.cancel')}</button>
         <button class="btn btn-error btn-sm" onclick={() => { showMostUninstall = false; ensureAppClosed('most', fullUninstallMost, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showLgcApplyLang}
+  <div class="modal modal-open" style="z-index: 1000;">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold mb-2">{t('dialog.apply_language_title')}</h3>
+      <p class="mb-4 text-sm">{t('dialog.apply_language_msg', { lang: resolveLgcLangName(lgcLangId) })}</p>
+      <div class="modal-action">
+        <button class="btn btn-outline btn-sm" onclick={() => (showLgcApplyLang = false)}>{t('button.not_now')}</button>
+        <button class="btn btn-primary btn-sm" onclick={() => { showLgcApplyLang = false; setLgcLanguage(); }}>{t('button.apply_now')}</button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if showMostApplyLang}
+  <div class="modal modal-open" style="z-index: 1000;">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold mb-2">{t('dialog.apply_language_title')}</h3>
+      <p class="mb-4 text-sm">{t('dialog.apply_language_msg', { lang: resolveMostLangName(mostLangId) })}</p>
+      <div class="modal-action">
+        <button class="btn btn-outline btn-sm" onclick={() => (showMostApplyLang = false)}>{t('button.not_now')}</button>
+        <button class="btn btn-primary btn-sm" onclick={() => { showMostApplyLang = false; installMost(); }}>{t('button.apply_now')}</button>
       </div>
     </div>
   </div>

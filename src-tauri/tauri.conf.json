@@ -31,7 +31,7 @@
       "digestAlgorithm": "sha256",
       "timestampUrl": "http://timestamp.digicert.com",
       "nsis": {
-        "languages": ["English", "SimpChinese", "TradChinese", "Russian", "Japanese"]
+        "languages": ["English", "SimpChinese", "TradChinese", "Russian", "Japanese", "Spanish", "German"]
       }
     },
     "icon": [

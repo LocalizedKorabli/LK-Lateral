@@ -83,6 +83,8 @@ pub fn system_locale_to_language() -> String {
     }
     if lower.starts_with("ru") { return String::from("ru"); }
     if lower.starts_with("ja") { return String::from("ja"); }
+    if lower.starts_with("es") { return String::from("es"); }
+    if lower.starts_with("de") { return String::from("de"); }
     String::from("en")
 }
 
