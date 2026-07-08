@@ -530,8 +530,8 @@
   }
 
   let lgcBadgeClass = $derived.by(() => {
-    if (!lgcStatus) return 'badge badge-ghost';
-    if (!lgcStatus.loc_installed) return 'badge badge-error';
+    if (!lgcStatus) return 'badge badge-muted';
+    if (!lgcStatus.loc_installed) return 'badge badge-danger';
     return 'badge badge-success';
   });
 
@@ -541,8 +541,8 @@
   });
 
   let mostBadgeClass = $derived.by(() => {
-    if (!mostStatus) return 'badge badge-ghost';
-    if (!mostStatus.loc_installed) return 'badge badge-error';
+    if (!mostStatus) return 'badge badge-muted';
+    if (!mostStatus.loc_installed) return 'badge badge-danger';
     return 'badge badge-success';
   });
 
@@ -734,26 +734,26 @@
     <h2 class="text-xl font-bold">{t('label.app')}</h2>
     <div class="flex gap-2">
       <button class="btn btn-sm btn-outline" onclick={refreshAll} disabled={refreshing}>
-        {#if refreshing}<span class="loading loading-spinner loading-xs"></span>{/if}
+        {#if refreshing}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
         {t('button.refresh')}
       </button>
       <button class="btn btn-sm btn-primary" onclick={autoScan} disabled={scanning}>
-        {#if scanning}<span class="loading loading-spinner loading-xs"></span>{/if}
+        {#if scanning}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
         {scanning ? t('label.scanning') : t('button.auto_scan')}
       </button>
     </div>
   </div>
 
-  <div class="card card-bordered bg-base-100 shadow-sm">
+  <div class="card">
     <div class="card-body p-5">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <h3 class="card-title text-lg m-0">{t('label.lgc')}</h3>
-          {#if lgcRunning}<span class="badge badge-warning badge-sm">{t('status.running')}</span>{/if}
+          {#if lgcRunning}<span class="badge badge-warning">{t('status.running')}</span>{/if}
           <span class={lgcBadgeClass}>{lgcBadgeText}</span>
         </div>
         {#if lgcPaths.length > 1}
-          <select class="select select-sm select-bordered max-w-[60%]" value={lgcPath} onchange={(e: Event) => selectLgcPath(lgcPaths.indexOf((e.target as HTMLSelectElement).value))}>
+          <select class="select max-w-[60%] text-xs" value={lgcPath} onchange={(e: Event) => selectLgcPath(lgcPaths.indexOf((e.target as HTMLSelectElement).value))}>
             {#each lgcPaths as p}
               <option value={p}>{p}</option>
             {/each}
@@ -761,46 +761,46 @@
         {/if}
       </div>
       <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        <span class="text-base-content/60">{t('label.path')}:</span>
+        <span class="text-muted">{t('label.path')}:</span>
         <span class="truncate">{lgcPath || '-'}</span>
-        <span class="text-base-content/60">{t('label.version')}:</span>
+        <span class="text-muted">{t('label.version')}:</span>
         <span>
           {lgcStatus?.version || '-'}
           {#if lgcAppTooOld}
-            <span class="badge badge-warning badge-xs ml-1.5">{t('status.needs_update')}</span>
+            <span class="badge badge-warning ml-1.5">{t('status.needs_update')}</span>
           {:else if lgcAppTooNew}
-            <span class="badge badge-warning badge-xs ml-1.5">{t('status.awaiting_adaptation')}</span>
+            <span class="badge badge-warning ml-1.5">{t('status.awaiting_adaptation')}</span>
           {/if}
         </span>
-        <span class="text-base-content/60">{t('label.localization')}:</span>
+        <span class="text-muted">{t('label.localization')}:</span>
         <span>
           {#if lgcStatus?.loc_installed}
             {lgcStatus.loc_version || '?'}
             {#if lgcNeedsUpdate}
-              <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
+              <span class="badge badge-info ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
             {t('status.localization_not_installed')}
           {/if}
         </span>
-        <span class="text-base-content/60">{t('label.lgc_language')}:</span>
+        <span class="text-muted">{t('label.lgc_language')}:</span>
         {#if lgcMetadata?.supported_languages}
           {#if lgcLangId || lgcStatus?.loc_language}
             <span>{lgcLangDisplay()}</span>
           {:else}
-            <span class="text-warning text-xs font-medium">{t('label.select_language_hint')}</span>
+            <span class="text-muted text-xs font-medium">{t('label.select_language_hint')}</span>
           {/if}
         {:else}
-          <span class="loading loading-spinner loading-xs"></span>
+          <svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
         {/if}
       </div>
       {#if lgcProgress.visible}
         <div class="mt-2">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-medium">{lgcProgress.message}</span>
-            <span class="text-xs text-base-content/60">{lgcProgress.percent}%</span>
+            <span class="text-xs text-muted">{lgcProgress.percent}%</span>
           </div>
-          <progress class="progress progress-primary w-full" value={lgcProgress.percent} max="100"></progress>
+          <progress class="progress w-full" value={lgcProgress.percent} max="100"></progress>
         </div>
       {/if}
       <div class="card-actions justify-end mt-3">
@@ -808,21 +808,21 @@
           <button class="btn btn-sm btn-outline" onclick={setLgcLanguage}>{t('button.apply_language')}</button>
         {/if}
         {#if lgcStatus?.loc_installed}
-          <div class="{!lgcNeedsUpdate ? 'tooltip tooltip-left' : ''}" data-tip={!lgcNeedsUpdate ? t('status.up_to_date') : ''}>
+          <div class="{!lgcNeedsUpdate ? 'tooltip' : ''}" data-tip={!lgcNeedsUpdate ? t('status.up_to_date') : ''}>
             <button class="btn btn-sm btn-primary" onclick={updateLgc} disabled={!lgcNeedsUpdate || installLoading.lgc}>
-              {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
+              {#if installLoading.lgc}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
               {t('button.update_localization')}
             </button>
           </div>
         {:else}
-          <div class="{lgcAppTooOld || lgcAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={lgcAppTooOld ? t('label.app_version_unsupported') : (lgcAppTooNew ? t('label.localization_not_ready') : '')}>
+          <div class="{lgcAppTooOld || lgcAppTooNew ? 'tooltip' : ''}" data-tip={lgcAppTooOld ? t('label.app_version_unsupported') : (lgcAppTooNew ? t('label.localization_not_ready') : '')}>
             <button class="btn btn-sm btn-primary" onclick={installLgc} disabled={lgcInstallDisabled()}>
-              {#if installLoading.lgc}<span class="loading loading-spinner loading-xs"></span>{/if}
+              {#if installLoading.lgc}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
               {t('button.install_localization')}
             </button>
           </div>
         {/if}
-        <button class="btn btn-sm btn-outline btn-error" onclick={() => (showLgcUninstall = true)} disabled={!lgcStatus?.loc_installed}>
+        <button class="btn btn-sm btn-danger" onclick={() => (showLgcUninstall = true)} disabled={!lgcStatus?.loc_installed}>
           {t('button.uninstall_localization')}
         </button>
         <button class="btn btn-sm btn-outline" onclick={launchLgc} disabled={!lgcPath}>
@@ -835,16 +835,16 @@
     </div>
   </div>
 
-  <div class="card card-bordered bg-base-100 shadow-sm">
+  <div class="card">
     <div class="card-body p-5">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
           <h3 class="card-title text-lg m-0">{t('label.most')}</h3>
-          {#if mostRunning}<span class="badge badge-warning badge-sm">{t('status.running')}</span>{/if}
+          {#if mostRunning}<span class="badge badge-warning">{t('status.running')}</span>{/if}
           <span class={mostBadgeClass}>{mostBadgeText}</span>
         </div>
         {#if mostPaths.length > 1}
-          <select class="select select-sm select-bordered max-w-[60%]" value={mostPath} onchange={(e: Event) => selectMostPath(mostPaths.indexOf((e.target as HTMLSelectElement).value))}>
+          <select class="select max-w-[60%] text-xs" value={mostPath} onchange={(e: Event) => selectMostPath(mostPaths.indexOf((e.target as HTMLSelectElement).value))}>
             {#each mostPaths as p}
               <option value={p}>{p}</option>
             {/each}
@@ -852,77 +852,77 @@
         {/if}
       </div>
       <div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        <span class="text-base-content/60">{t('label.path')}:</span>
+        <span class="text-muted">{t('label.path')}:</span>
         <span class="truncate">{mostPath || '-'}</span>
-        <span class="text-base-content/60">{t('label.version')}:</span>
+        <span class="text-muted">{t('label.version')}:</span>
         <span>
           {mostStatus?.version || '-'}
           {#if mostAppTooOld}
-            <span class="badge badge-warning badge-xs ml-1.5">{t('status.needs_update')}</span>
+            <span class="badge badge-warning ml-1.5">{t('status.needs_update')}</span>
           {:else if mostAppTooNew}
-            <span class="badge badge-warning badge-xs ml-1.5">{t('status.awaiting_adaptation')}</span>
+            <span class="badge badge-warning ml-1.5">{t('status.awaiting_adaptation')}</span>
           {/if}
         </span>
-        <span class="text-base-content/60">{t('label.localization_app')}:</span>
+        <span class="text-muted">{t('label.localization_app')}:</span>
         <span>
           {#if mostStatus?.loc_installed}
             {mostStatus.loc_app_version || '?'}
             {#if mostAppNeedsUpdate}
-              <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
+              <span class="badge badge-info ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
             {t('status.localization_not_installed')}
           {/if}
         </span>
-        <span class="text-base-content/60">{t('label.localization_mods')}:</span>
+        <span class="text-muted">{t('label.localization_mods')}:</span>
         <span>
           {#if mostStatus?.loc_installed}
             {mostStatus.loc_mods_version || '?'}
             {#if mostModsNeedsUpdate}
-              <span class="badge badge-info badge-xs ml-1.5">{t('label.update_available')}</span>
+              <span class="badge badge-info ml-1.5">{t('label.update_available')}</span>
             {/if}
           {:else}
             {t('status.localization_not_installed')}
           {/if}
         </span>
-        <span class="text-base-content/60">{t('label.language')}:</span>
+        <span class="text-muted">{t('label.language')}:</span>
         {#if mostMetadata}
           {#if mostLangId || mostStatus?.loc_language}
             <span>{mostLangDisplay()}</span>
           {:else}
-            <span class="text-warning text-xs font-medium">{t('label.select_language_hint')}</span>
+            <span class="text-muted text-xs font-medium">{t('label.select_language_hint')}</span>
           {/if}
         {:else}
-          <span class="loading loading-spinner loading-xs"></span>
+          <svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
         {/if}
       </div>
       {#if mostProgress.visible}
         <div class="mt-2">
           <div class="flex items-center justify-between mb-1">
             <span class="text-xs font-medium">{mostProgress.message}</span>
-            <span class="text-xs text-base-content/60">{mostProgress.percent}%</span>
+            <span class="text-xs text-muted">{mostProgress.percent}%</span>
           </div>
-          <progress class="progress progress-primary w-full" value={mostProgress.percent} max="100"></progress>
+          <progress class="progress w-full" value={mostProgress.percent} max="100"></progress>
         </div>
       {/if}
       <div class="card-actions justify-end mt-3">
         {#if mostStatus?.loc_installed}
           {@const btnEnabled = mostNeedsUpdate || mostLangSwitched}
-          <div class="{!btnEnabled ? 'tooltip tooltip-left' : ''}" data-tip={!btnEnabled && !mostLangId ? t('label.select_language_first') : (!btnEnabled ? t('status.up_to_date') : '')}>
+          <div class="{!btnEnabled ? 'tooltip' : ''}" data-tip={!btnEnabled && !mostLangId ? t('label.select_language_first') : (!btnEnabled ? t('status.up_to_date') : '')}>
             <button class="btn btn-sm btn-primary" onclick={mostLangSwitched ? installMost : updateMost} disabled={!btnEnabled || installLoading.most}>
-              {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
+              {#if installLoading.most}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
               {t('button.update_localization')}
             </button>
           </div>
         {:else}
-          <div class="{mostInstallDisabled() && !mostLangId || mostAppTooOld || mostAppTooNew ? 'tooltip tooltip-left' : ''}" data-tip={mostAppTooOld ? t('label.app_version_unsupported') : (mostAppTooNew ? t('label.localization_not_ready') : (mostInstallDisabled() && !mostLangId ? t('label.select_language_first') : ''))}>
+          <div class="{mostInstallDisabled() && !mostLangId || mostAppTooOld || mostAppTooNew ? 'tooltip' : ''}" data-tip={mostAppTooOld ? t('label.app_version_unsupported') : (mostAppTooNew ? t('label.localization_not_ready') : (mostInstallDisabled() && !mostLangId ? t('label.select_language_first') : ''))}>
             <button class="btn btn-sm btn-primary" onclick={installMost} disabled={mostInstallDisabled()}>
-              {#if installLoading.most}<span class="loading loading-spinner loading-xs"></span>{/if}
+              {#if installLoading.most}<svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>{/if}
               {t('button.install_localization')}
             </button>
           </div>
         {/if}
-        <button class="btn btn-sm btn-outline btn-error" onclick={() => (showMostUninstall = true)} disabled={!mostStatus?.loc_installed}>
+        <button class="btn btn-sm btn-danger" onclick={() => (showMostUninstall = true)} disabled={!mostStatus?.loc_installed}>
           {t('button.uninstall_localization')}
         </button>
         <button class="btn btn-sm btn-outline" onclick={launchMost} disabled={!mostPath}>
@@ -937,19 +937,19 @@
 </div>
 
 {#if showLgcSettings}
-  <div class="modal modal-open">
+  <div class="modal-backdrop">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-4">LGC {t('button.settings')}</h3>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.lgc_path')}</span></div>
         <div class="join w-full">
-          <input type="text" class="input input-bordered join-item flex-1" bind:value={lgcPathInput} placeholder="C:\Games\Lesta Game Center" />
+          <input type="text" class="input join-item flex-1" bind:value={lgcPathInput} placeholder="C:\Games\Lesta Game Center" />
           <button class="btn btn-outline join-item" onclick={browseLgcPath}>{t('button.browse')}</button>
         </div>
       </div>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.lgc_language')}</span></div>
-        <select class="select select-bordered w-full" bind:value={lgcLangIdInput}>
+        <select class="select w-full" bind:value={lgcLangIdInput}>
           <option value="">{t('label.select_language')}</option>
           {#each lgcMetadata?.supported_languages || [] as langItem}
             <option value={langItem.id}>{langItem.name}</option>
@@ -965,19 +965,19 @@
 {/if}
 
 {#if showMostSettings}
-  <div class="modal modal-open">
+  <div class="modal-backdrop">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-4">Most {t('button.settings')}</h3>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.path')}</span></div>
         <div class="join w-full">
-          <input type="text" class="input input-bordered join-item flex-1" bind:value={mostPathInput} placeholder="C:\Games\Mir Korabley" />
+          <input type="text" class="input join-item flex-1" bind:value={mostPathInput} placeholder="C:\Games\Mir Korabley" />
           <button class="btn btn-outline join-item" onclick={browseMostPath}>{t('button.browse')}</button>
         </div>
       </div>
       <div class="form-control mb-4">
         <div class="label"><span class="label-text">{t('label.most_language')}</span></div>
-        <select class="select select-bordered w-full" bind:value={mostLangIdInput}>
+        <select class="select w-full" bind:value={mostLangIdInput}>
           <option value="">{t('label.select_language')}</option>
           {#each mostMetadata || [] as item}
             <option value={item.id}>{item.name}</option>
@@ -993,68 +993,68 @@
 {/if}
 
 {#if showLgcUninstall}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.uninstall_confirm_title')}</h3>
       <p class="mb-4 text-sm whitespace-pre-line">{t('dialog.uninstall_confirm_msg')}</p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={() => (showLgcUninstall = false)}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={() => { showLgcUninstall = false; ensureAppClosed('lgc', fullUninstallLgc, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
+        <button class="btn btn-sm btn-outline" onclick={() => (showLgcUninstall = false)}>{t('button.cancel')}</button>
+        <button class="btn btn-sm btn-danger" onclick={() => { showLgcUninstall = false; ensureAppClosed('lgc', fullUninstallLgc, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
       </div>
     </div>
   </div>
 {/if}
 
 {#if showMostUninstall}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.uninstall_confirm_title')}</h3>
       <p class="mb-4 text-sm whitespace-pre-line">{t('dialog.uninstall_confirm_msg')}</p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={() => (showMostUninstall = false)}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={() => { showMostUninstall = false; ensureAppClosed('most', fullUninstallMost, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
+        <button class="btn btn-sm btn-outline" onclick={() => (showMostUninstall = false)}>{t('button.cancel')}</button>
+        <button class="btn btn-sm btn-danger" onclick={() => { showMostUninstall = false; ensureAppClosed('most', fullUninstallMost, t('button.uninstall_localization')); }}>{t('button.uninstall_localization')}</button>
       </div>
     </div>
   </div>
 {/if}
 
 {#if showLgcApplyLang}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.apply_language_title')}</h3>
       <p class="mb-4 text-sm">{t('dialog.apply_language_msg', { lang: resolveLgcLangName(lgcLangId) })}</p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={() => (showLgcApplyLang = false)}>{t('button.not_now')}</button>
-        <button class="btn btn-primary btn-sm" onclick={() => { showLgcApplyLang = false; setLgcLanguage(); }}>{t('button.apply_now')}</button>
+        <button class="btn btn-sm btn-outline" onclick={() => (showLgcApplyLang = false)}>{t('button.not_now')}</button>
+        <button class="btn btn-sm btn-primary" onclick={() => { showLgcApplyLang = false; setLgcLanguage(); }}>{t('button.apply_now')}</button>
       </div>
     </div>
   </div>
 {/if}
 
 {#if showMostApplyLang}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.apply_language_title')}</h3>
       <p class="mb-4 text-sm">{t('dialog.apply_language_msg', { lang: resolveMostLangName(mostLangId) })}</p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={() => (showMostApplyLang = false)}>{t('button.not_now')}</button>
-        <button class="btn btn-primary btn-sm" onclick={() => { showMostApplyLang = false; installMost(); }}>{t('button.apply_now')}</button>
+        <button class="btn btn-sm btn-outline" onclick={() => (showMostApplyLang = false)}>{t('button.not_now')}</button>
+        <button class="btn btn-sm btn-primary" onclick={() => { showMostApplyLang = false; installMost(); }}>{t('button.apply_now')}</button>
       </div>
     </div>
   </div>
 {/if}
 
 {#if toastMessage}
-  <div class="toast toast-bottom toast-center z-50 mb-4">
-    <div class="alert alert-{toastType} shadow-lg gap-3 min-w-[320px]">
+  <div class="toast-container">
+    <div class="toast toast-{toastType}">
       {#if toastType === 'success'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
       {:else if toastType === 'error'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
       {:else if toastType === 'warning'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
       {:else}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       {/if}
       <span class="text-sm font-medium">{toastMessage}</span>
     </div>
@@ -1062,36 +1062,36 @@
 {/if}
 
 {#if waitingForClose && pendingAction}
-  <div class="modal modal-open">
+  <div class="modal-backdrop">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.app_running_title')}</h3>
       <p class="mb-4 text-sm">
         {t('dialog.app_running_msg', { app: t(`label.${pendingAction.instance}`), action: pendingAction.label })}
       </p>
-      <div class="flex items-center gap-2 mb-4 text-sm text-base-content/60">
-        <span class="loading loading-spinner loading-sm"></span>
+      <div class="flex items-center gap-2 mb-4 text-sm text-muted">
+        <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
         <span>{t('dialog.waiting_for_close', { app: t(`label.${pendingAction.instance}`) })}</span>
       </div>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={cancelPendingAction}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={openKillConfirm}>{t('button.force_kill')}</button>
+        <button class="btn btn-sm btn-outline" onclick={cancelPendingAction}>{t('button.cancel')}</button>
+        <button class="btn btn-sm btn-danger" onclick={openKillConfirm}>{t('button.force_kill')}</button>
       </div>
     </div>
   </div>
 {/if}
 
 {#if showKillConfirm && pendingAction}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('dialog.force_kill_confirm_title')}</h3>
       <p class="mb-4 text-sm">
         {t('dialog.force_kill_confirm_msg', { app: t(`label.${pendingAction.instance}`) })}
       </p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={closeKillConfirm} disabled={killingInProgress}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={forceKillAndProceed} disabled={killingInProgress}>
+        <button class="btn btn-sm btn-outline" onclick={closeKillConfirm} disabled={killingInProgress}>{t('button.cancel')}</button>
+        <button class="btn btn-sm btn-danger" onclick={forceKillAndProceed} disabled={killingInProgress}>
           {#if killingInProgress}
-            <span class="loading loading-spinner loading-xs"></span>
+            <svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
           {/if}
           {killingInProgress ? t('dialog.force_kill_progress', { app: t(`label.${pendingAction.instance}`) }) : t('button.confirm')}
         </button>

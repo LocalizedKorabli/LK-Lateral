@@ -1,9 +1,10 @@
 [package]
 name = "lk-lateral"
-version = "0.2.0"
+version = "0.2.1"
 description = "Installation for lgc & most l10n made easy."
 authors = ["LocalizedKorabli"]
 edition = "2021"
+license = "AGPL-3.0-only"
 
 [lib]
 name = "lk_lateral_lib"

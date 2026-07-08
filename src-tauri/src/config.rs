@@ -18,7 +18,7 @@ impl Default for ProxyConfig {
         Self {
             use_system_proxy: true,
             custom_host: String::new(),
-            custom_port: 8080,
+            custom_port: 7890,
             custom_username: None,
         }
     }

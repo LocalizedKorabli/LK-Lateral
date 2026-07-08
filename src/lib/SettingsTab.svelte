@@ -173,11 +173,14 @@
 </script>
 
 <div class="flex flex-col gap-6 max-w-xl mx-auto p-4">
-  <div class="card card-bordered bg-base-100 shadow-sm">
+  <div class="card">
     <div class="card-body">
-      <h3 class="card-title text-lg mb-4">{t('settings.language')}</h3>
+      <h3 class="card-title text-lg mb-4 flex items-center gap-2">
+        {t('settings.language')}
+        <svg class="h-4 w-4 text-muted shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+      </h3>
       <select
-        class="select select-bordered w-full max-w-xs"
+        class="select w-full max-w-xs"
         value={lang}
         onchange={(e: Event) => {
           const target = e.target as HTMLSelectElement;
@@ -191,7 +194,7 @@
     </div>
   </div>
 
-  <div class="card card-bordered bg-base-100 shadow-sm">
+  <div class="card">
     <div class="card-body">
       <h3 class="card-title text-lg mb-4">{t('settings.proxy')}</h3>
 
@@ -200,7 +203,7 @@
           <input
             type="radio"
             name="proxyMode"
-            class="radio radio-primary radio-sm"
+            class="radio"
             checked={proxyConfig.use_system_proxy}
             onchange={() => (proxyConfig = { ...proxyConfig, use_system_proxy: true })}
           />
@@ -212,7 +215,7 @@
           <input
             type="radio"
             name="proxyMode"
-            class="radio radio-primary radio-sm"
+            class="radio"
             checked={!proxyConfig.use_system_proxy}
             onchange={() => (proxyConfig = { ...proxyConfig, use_system_proxy: false, custom_host: proxyConfig.custom_host || '127.0.0.1', custom_port: proxyConfig.custom_port || 7890 })}
           />
@@ -229,7 +232,7 @@
               </div>
               <input
                 type="text"
-                class="input input-bordered w-full"
+                class="input w-full"
                 bind:value={proxyConfig.custom_host}
                 placeholder="127.0.0.1"
               />
@@ -240,14 +243,16 @@
               </div>
               <input
                 type="number"
-                class="input input-bordered w-full"
+                class="input w-full"
                 bind:value={proxyConfig.custom_port}
                 placeholder="7890"
               />
             </label>
           </div>
           <details class="pl-1">
-            <summary class="cursor-pointer text-sm font-medium py-1 select-none">{t('settings.auth_optional')}</summary>
+            <summary class="cursor-pointer text-xs font-medium text-muted py-1 select-none list-none">{t('settings.auth_optional')}
+              <svg class="inline-block h-3 w-3 ml-0.5 transition-transform " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </summary>
             <div class="flex flex-col gap-3 pt-2">
               <label class="form-control w-full">
                 <div class="label">
@@ -255,7 +260,7 @@
                 </div>
                 <input
                   type="text"
-                  class="input input-bordered w-full"
+                  class="input w-full"
                   bind:value={proxyConfig.custom_username}
                   placeholder=""
                 />
@@ -266,7 +271,7 @@
                 </div>
                 <input
                   type="password"
-                  class="input input-bordered w-full"
+                  class="input w-full"
                   bind:value={proxyPassword}
                   placeholder=""
                 />
@@ -278,9 +283,9 @@
 
       <div class="card-actions mt-4">
         {#if proxyDirty}
-          <button class="btn btn-primary" onclick={saveProxy} disabled={loading}>
+          <button class="btn btn-sm btn-primary" onclick={saveProxy} disabled={loading}>
             {#if loading}
-              <span class="loading loading-spinner loading-xs"></span>
+              <svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             {/if}
             {t('button.save')}
           </button>
@@ -289,33 +294,36 @@
     </div>
   </div>
 
-  <div class="card card-bordered bg-base-100 shadow-sm">
+  <div class="card">
     <div class="card-body">
       <h3 class="card-title text-lg mb-4">{t('settings.files')}</h3>
 
-      <div class="flex items-center justify-between py-1">
-        <span class="text-sm"><span class="text-base-content/60">{t('settings.data_dir_label')}:</span> <span class="text-xs font-mono break-all">{dataDir}</span></span>
-        <button class="btn btn-outline btn-sm shrink-0 ml-3" onclick={openDataDir}>{t('settings.open_dir')}</button>
+      <div class="flex items-center justify-between py-1 gap-3">
+        <span class="text-sm truncate" title={dataDir}>
+          <span class="text-muted">{t('settings.data_dir_label')}:</span>
+          <span class="text-xs font-mono">{dataDir}</span>
+        </span>
+        <button class="btn btn-outline btn-sm shrink-0" onclick={openDataDir}>{t('settings.open_dir')}</button>
       </div>
 
-      <div class="flex items-center justify-between py-1">
-        <span class="text-sm"><span class="text-base-content/60">{t('settings.cache')}:</span> {cacheSize}</span>
-        <button class="btn btn-outline btn-sm shrink-0 ml-3" onclick={() => (showClearCacheConfirm = true)}>{t('settings.clear_cache')}</button>
+      <div class="flex items-center justify-between py-1 gap-3">
+        <span class="text-sm"><span class="text-muted">{t('settings.cache')}:</span> {cacheSize}</span>
+        <button class="btn btn-outline btn-sm shrink-0" onclick={() => (showClearCacheConfirm = true)}>{t('settings.clear_cache')}</button>
       </div>
     </div>
   </div>
 </div>
 
 {#if showClearCacheConfirm}
-  <div class="modal modal-open" style="z-index: 1000;">
+  <div class="modal-backdrop" style="z-index: 1000;">
     <div class="modal-box">
       <h3 class="text-lg font-bold mb-2">{t('settings.clear_cache_confirm_title')}</h3>
       <p class="mb-4 text-sm whitespace-pre-line">{t('settings.clear_cache_confirm_msg')}</p>
       <div class="modal-action">
-        <button class="btn btn-outline btn-sm" onclick={() => (showClearCacheConfirm = false)} disabled={clearingCache}>{t('button.cancel')}</button>
-        <button class="btn btn-error btn-sm" onclick={doClearCache} disabled={clearingCache}>
+        <button class="btn btn-sm btn-outline" onclick={() => (showClearCacheConfirm = false)} disabled={clearingCache}>{t('button.cancel')}</button>
+        <button class="btn btn-sm btn-danger" onclick={doClearCache} disabled={clearingCache}>
           {#if clearingCache}
-            <span class="loading loading-spinner loading-xs"></span>
+            <svg class="animate-spin h-3 w-3 text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
           {/if}
           {t('button.confirm')}
         </button>
@@ -325,14 +333,14 @@
 {/if}
 
 {#if toastMessage}
-  <div class="toast toast-bottom toast-center z-50 mb-4">
-    <div class="alert alert-{toastType} shadow-lg gap-3 min-w-[320px]">
+  <div class="toast-container">
+    <div class="toast toast-{toastType}">
       {#if toastType === 'success'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
       {:else if toastType === 'error'}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
       {:else}
-        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
       {/if}
       <span class="text-sm font-medium">{toastMessage}</span>
     </div>

@@ -10,6 +10,7 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 use futures_util::StreamExt;
 use tauri::Emitter;
+use tauri::Manager;
 
 #[derive(Serialize, Deserialize)]
 struct UpdateInfo {
@@ -153,6 +154,19 @@ fn clear_cache() -> Result<(), String> {
     localization::clear_all_caches()
 }
 
+fn version_newer(remote: &str, local: &str) -> bool {
+    let parse = |v: &str| -> Vec<u32> { v.split('.').filter_map(|s| s.parse().ok()).collect() };
+    let r = parse(remote);
+    let l = parse(local);
+    for i in 0..r.len().max(l.len()) {
+        let rn = r.get(i).copied().unwrap_or(0);
+        let ln = l.get(i).copied().unwrap_or(0);
+        if rn > ln { return true; }
+        if rn < ln { return false; }
+    }
+    false
+}
+
 #[tauri::command]
 fn get_app_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
@@ -196,7 +210,7 @@ async fn check_lateral_update() -> Result<Option<UpdateInfo>, String> {
         .await
         .map_err(|e| format!("Failed to parse update metadata: {}", e))?;
     let current = env!("CARGO_PKG_VERSION");
-    if info.version != current {
+    if version_newer(&info.version, current) {
         Ok(Some(info))
     } else {
         Ok(None)
@@ -270,12 +284,32 @@ fn delete_proxy_password() -> Result<(), String> {
     config::delete_proxy_password()
 }
 
+#[tauri::command]
+fn set_window_theme(app: tauri::AppHandle, theme: String) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_theme(if theme == "dark" {
+            Some(tauri::Theme::Dark)
+        } else {
+            Some(tauri::Theme::Light)
+        });
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .setup(|app| {
+            if let Ok(cfg) = config::load_config() {
+                if let Some(window) = app.get_webview_window("main") {
+                    let theme = if cfg.theme == "dark" { Some(tauri::Theme::Dark) } else { Some(tauri::Theme::Light) };
+                    let _ = window.set_theme(theme);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             scan_lgc,
             scan_most,
@@ -307,6 +341,7 @@ pub fn run() {
             save_proxy_password,
             load_proxy_password,
             delete_proxy_password,
+            set_window_theme,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
